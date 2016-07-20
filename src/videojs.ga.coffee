@@ -23,7 +23,7 @@ videojs.plugin 'ga', (options = {}) ->
 
   eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video'
   # if you didn't specify a name, it will be 'guessed' from the video src after metadatas are loaded
-  eventLabel = options.eventLabel || dataSetupOptions.eventLabel
+  eventId = options.eventId || dataSetupOptions.eventId
 
   # if debug isn't specified
   options.debug = options.debug || false
@@ -34,11 +34,11 @@ videojs.plugin 'ga', (options = {}) ->
   seeking = false
 
   loaded = ->
-    unless eventLabel
-      eventLabel = @currentSrc().split("/").slice(-1)[0].replace(/\.(\w{3,4})(\?.*)?$/i,'')
+    unless eventId
+      eventId = @currentSrc().split("/").slice(-1)[0].replace(/\.(\w{3,4})(\?.*)?$/i,'')
 
     if "loadedmetadata" in eventsToTrack
-      sendbeacon( 'loadedmetadata', true )
+      sendbeacon( eventId, eventId, 'loadedmetadata', true )
 
     return
 
@@ -51,9 +51,10 @@ videojs.plugin 'ga', (options = {}) ->
       if percentPlayed >= percent && percent not in percentsAlreadyTracked
 
         if "start" in eventsToTrack && percent == 0 && percentPlayed > 0
-          sendbeacon( 'start', true )
+          sendbeacon( eventId, 'start', 'start playback', true )
+          sendbeacon( eventId, 'percent played', percent, true, percent )
         else if "percentsPlayed" in eventsToTrack && percentPlayed != 0
-          sendbeacon( 'percent played', true, percent )
+          sendbeacon( eventId, 'percent played', percent, true, percent )
 
         if percentPlayed > 0
           percentsAlreadyTracked.push(percent)
@@ -64,18 +65,18 @@ videojs.plugin 'ga', (options = {}) ->
       # if the difference between the start and the end are greater than 1 it's a seek.
       if Math.abs(seekStart - seekEnd) > 1
         seeking = true
-        sendbeacon( 'seek start', false, seekStart )
-        sendbeacon( 'seek end', false, seekEnd )
+        sendbeacon( eventId, 'seek start', seekStart, false, seekStart )
+        sendbeacon( eventId, 'seek end', seekEnd, false, seekEnd )
 
     return
 
   end = ->
-    sendbeacon( 'end', true )
+    sendbeacon( eventId, 'end', 'end video', true )
     return
 
   play = ->
     currentTime = Math.round(@currentTime())
-    sendbeacon( 'play', true, currentTime )
+    sendbeacon( eventId, 'play', currentTime, true, currentTime)
     seeking = false
     return
 
@@ -83,44 +84,46 @@ videojs.plugin 'ga', (options = {}) ->
     currentTime = Math.round(@currentTime())
     duration = Math.round(@duration())
     if currentTime != duration && !seeking
-      sendbeacon( 'pause', false, currentTime )
+      sendbeacon( eventId, 'pause', currentTime , false, currentTime)
     return
 
   # value between 0 (muted) and 1
   volumeChange = ->
     volume = if @muted() == true then 0 else @volume()
-    sendbeacon( 'volume change', false, volume )
+    sendbeacon( eventId, 'volume change', volume , false, volume )
     return
 
   resize = ->
-    sendbeacon( 'resize - ' + @width() + "*" + @height(), true )
+    sendbeacon( eventId, 'resize', @width() + "*" + @height() , true )
     return
 
   error = ->
     currentTime = Math.round(@currentTime())
+    errorInfo = @error()
+    #console.log('error!', error.code, error.type , error.message);
     # XXX: Is there some informations about the error somewhere ?
-    sendbeacon( 'error', true, currentTime )
+    sendbeacon( eventId, 'error', JSON.stringify(errorInfo), true, currentTime )
     return
 
   fullscreen = ->
     currentTime = Math.round(@currentTime())
     if @isFullscreen?() || @isFullScreen?()
-      sendbeacon( 'enter fullscreen', false, currentTime )
+      sendbeacon( eventId, 'fullscreen', 'enter', false, currentTime )
     else
-      sendbeacon( 'exit fullscreen', false, currentTime )
+      sendbeacon( eventId, 'fullscreen', 'exit', false, currentTime )
     return
 
-  sendbeacon = ( action, nonInteraction, value ) ->
+  sendbeacon = ( category, action, label, nonInteraction, value ) ->
     # console.log action, " ", nonInteraction, " ", value
     if window.ga
       ga 'send', 'event',
-        'eventCategory' 	: eventCategory
-        'eventAction'		  : action
-        'eventLabel'		  : eventLabel
-        'eventValue'      : value
+        'eventCategory' 	: category
+        'eventAction'		: action
+        'eventLabel'		: label
+        'eventValue'        : value
         'nonInteraction'	: nonInteraction
     else if window._gaq
-      _gaq.push(['_trackEvent', eventCategory, action, eventLabel, value, nonInteraction])
+      _gaq.push(['_trackEvent', category, action, eventLabel, value, nonInteraction])
     else if options.debug
       console.log("Google Analytics not detected")
     return
