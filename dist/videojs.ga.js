@@ -41,7 +41,7 @@
       duration = Math.round(this.duration());
       percentPlayed = Math.round(currentTime / duration * 100);
       for (percent = _i = 0; _i <= 99; percent = _i += percentsPlayedInterval) {
-        if (percentPlayed >= percent && __indexOf.call(percentsAlreadyTracked, percent) < 0) {
+        if (percentPlayed === percent && __indexOf.call(percentsAlreadyTracked, percent) < 0) {
           if (__indexOf.call(eventsToTrack, "start") >= 0 && percent === 0 && percentPlayed > 0) {
             sendbeacon(eventId, 'start', 'start playback', true);
             sendbeacon(eventId, 'percent played', percent, true, percent);
