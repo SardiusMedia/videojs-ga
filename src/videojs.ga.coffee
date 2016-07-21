@@ -49,12 +49,12 @@ videojs.plugin 'ga', (options = {}) ->
 
     for percent in [0..99] by percentsPlayedInterval
       if percentPlayed == percent && percent not in percentsAlreadyTracked
-
+      		twoDigitPercent = ('0' + percent).slice(-2)
         if "start" in eventsToTrack && percent == 0 && percentPlayed > 0
           sendbeacon( eventId, 'start', 'start playback', true )
-          sendbeacon( eventId, 'percent played', percent, true, percent )
+          sendbeacon( eventId, 'percent played', twoDigitPercent, true, percent )
         else if "percentsPlayed" in eventsToTrack && percentPlayed != 0
-          sendbeacon( eventId, 'percent played', percent, true, percent )
+          sendbeacon( eventId, 'percent played', twoDigitPercent, true, percent )
 
         if percentPlayed > 0
           percentsAlreadyTracked.push(percent)

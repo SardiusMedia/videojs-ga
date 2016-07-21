@@ -1,5 +1,5 @@
 /*
-* videojs-ga - v0.4.2 - 2016-07-20
+* videojs-ga - v0.4.2 - 2016-07-21
 * Copyright (c) 2016 Michael Bensoussan
 * Licensed MIT
 */
@@ -36,17 +36,18 @@
       }
     };
     timeupdate = function() {
-      var currentTime, duration, percent, percentPlayed, _i;
+      var currentTime, duration, percent, percentPlayed, twoDigitPercent, _i;
       currentTime = Math.round(this.currentTime());
       duration = Math.round(this.duration());
       percentPlayed = Math.round(currentTime / duration * 100);
       for (percent = _i = 0; _i <= 99; percent = _i += percentsPlayedInterval) {
         if (percentPlayed === percent && __indexOf.call(percentsAlreadyTracked, percent) < 0) {
+          twoDigitPercent = ('0' + percent).slice(-2);
           if (__indexOf.call(eventsToTrack, "start") >= 0 && percent === 0 && percentPlayed > 0) {
             sendbeacon(eventId, 'start', 'start playback', true);
-            sendbeacon(eventId, 'percent played', percent, true, percent);
+            sendbeacon(eventId, 'percent played', twoDigitPercent, true, percent);
           } else if (__indexOf.call(eventsToTrack, "percentsPlayed") >= 0 && percentPlayed !== 0) {
-            sendbeacon(eventId, 'percent played', percent, true, percent);
+            sendbeacon(eventId, 'percent played', twoDigitPercent, true, percent);
           }
           if (percentPlayed > 0) {
             percentsAlreadyTracked.push(percent);
