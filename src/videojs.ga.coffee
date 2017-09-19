@@ -20,6 +20,7 @@ videojs.plugin 'ga', (options = {}) ->
   ]
   eventsToTrack = options.eventsToTrack || dataSetupOptions.eventsToTrack || defaultsEventsToTrack
   percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 10
+  trackPlayedInterval = options.trackPlayedInterval || dataSetupOptions.trackPlayedInterval || false
 
   eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video'
   # if you didn't specify a name, it will be 'guessed' from the video src after metadatas are loaded
@@ -32,6 +33,7 @@ videojs.plugin 'ga', (options = {}) ->
   percentsAlreadyTracked = []
   seekStart = seekEnd = 0
   seeking = false
+  lastTrackedInterval = 0
 
   loaded = ->
     unless eventId
@@ -58,6 +60,11 @@ videojs.plugin 'ga', (options = {}) ->
 
         if percentPlayed > 0
           percentsAlreadyTracked.push(percent)
+
+    if trackPlayedInterval
+      if trackPlayedInterval >= currentTime - lastTrackedInterval
+         sendbeacon( eventId, 'time played', currentTime, true, currentTime )
+
 
     if "seek" in eventsToTrack
       seekStart = seekEnd

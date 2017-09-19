@@ -1,13 +1,13 @@
 /*
-* videojs-ga - v0.4.2 - 2016-07-21
-* Copyright (c) 2016 Michael Bensoussan
+* videojs-ga - v0.4.2 - 2017-09-19
+* Copyright (c) 2017 Michael Bensoussan
 * Licensed MIT
 */
 (function() {
   var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   videojs.plugin('ga', function(options) {
-    var dataSetupOptions, defaultsEventsToTrack, end, error, eventCategory, eventId, eventsToTrack, fullscreen, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, resize, seekEnd, seekStart, seeking, sendbeacon, timeupdate, volumeChange;
+    var dataSetupOptions, defaultsEventsToTrack, end, error, eventCategory, eventId, eventsToTrack, fullscreen, lastTrackedInterval, loaded, parsedOptions, pause, percentsAlreadyTracked, percentsPlayedInterval, play, resize, seekEnd, seekStart, seeking, sendbeacon, timeupdate, trackPlayedInterval, volumeChange;
     if (options == null) {
       options = {};
     }
@@ -21,12 +21,14 @@
     defaultsEventsToTrack = ['loaded', 'percentsPlayed', 'start', 'end', 'seek', 'play', 'pause', 'resize', 'volumeChange', 'error', 'fullscreen'];
     eventsToTrack = options.eventsToTrack || dataSetupOptions.eventsToTrack || defaultsEventsToTrack;
     percentsPlayedInterval = options.percentsPlayedInterval || dataSetupOptions.percentsPlayedInterval || 10;
+    trackPlayedInterval = options.trackPlayedInterval || dataSetupOptions.trackPlayedInterval || false;
     eventCategory = options.eventCategory || dataSetupOptions.eventCategory || 'Video';
     eventId = options.eventId || dataSetupOptions.eventId;
     options.debug = options.debug || false;
     percentsAlreadyTracked = [];
     seekStart = seekEnd = 0;
     seeking = false;
+    lastTrackedInterval = 0;
     loaded = function() {
       if (!eventId) {
         eventId = this.currentSrc().split("/").slice(-1)[0].replace(/\.(\w{3,4})(\?.*)?$/i, '');
@@ -52,6 +54,11 @@
           if (percentPlayed > 0) {
             percentsAlreadyTracked.push(percent);
           }
+        }
+      }
+      if (trackPlayedInterval) {
+        if (trackPlayedInterval >= currentTime - lastTrackedInterval) {
+          sendbeacon(eventId, 'time played', currentTime, true, currentTime);
         }
       }
       if (__indexOf.call(eventsToTrack, "seek") >= 0) {
