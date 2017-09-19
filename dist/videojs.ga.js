@@ -59,6 +59,7 @@
       if (trackPlayedInterval) {
         if (trackPlayedInterval >= currentTime - lastTrackedInterval) {
           sendbeacon(eventId, 'time played', currentTime, true, currentTime);
+          lastTrackedInterval = currentTime;
         }
       }
       if (__indexOf.call(eventsToTrack, "seek") >= 0) {
