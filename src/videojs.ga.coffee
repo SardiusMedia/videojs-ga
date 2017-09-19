@@ -61,8 +61,9 @@ videojs.plugin 'ga', (options = {}) ->
         if percentPlayed > 0
           percentsAlreadyTracked.push(percent)
 
+
     if trackPlayedInterval
-      if trackPlayedInterval >= currentTime - lastTrackedInterval
+      if trackPlayedInterval <= (currentTime - lastTrackedInterval)
          sendbeacon( eventId, 'time played', currentTime, true, currentTime )
          lastTrackedInterval = currentTime
 
