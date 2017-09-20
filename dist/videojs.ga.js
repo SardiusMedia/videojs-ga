@@ -1,5 +1,5 @@
 /*
-* videojs-ga - v0.4.3 - 2017-09-19
+* videojs-ga - v0.4.5 - 2017-09-19
 * Copyright (c) 2017 Michael Bensoussan
 * Licensed MIT
 */
@@ -38,7 +38,7 @@
       }
     };
     timeupdate = function() {
-      var currentTime, duration, percent, percentPlayed, twoDigitPercent, _i;
+      var currentTime, duration, percent, percentPlayed, trackPlayedSeconds, twoDigitPercent, _i;
       currentTime = Math.round(this.currentTime());
       duration = Math.round(this.duration());
       percentPlayed = Math.round(currentTime / duration * 100);
@@ -58,7 +58,10 @@
       }
       if (trackPlayedInterval) {
         if (trackPlayedInterval <= (currentTime - lastTrackedInterval)) {
-          sendbeacon(eventId, 'time played', currentTime, true, currentTime);
+          trackPlayedSeconds = "00000000000000" + currentTime;
+          trackPlayedSeconds = trackPlayedSeconds.substr(trackPlayedSeconds.length - 15);
+          console.log(trackPlayedSeconds);
+          sendbeacon(eventId, 'currentTime', trackPlayedSeconds, true, trackPlayedSeconds);
           lastTrackedInterval = currentTime;
         }
       }

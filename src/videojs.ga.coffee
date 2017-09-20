@@ -64,8 +64,11 @@ videojs.plugin 'ga', (options = {}) ->
 
     if trackPlayedInterval
       if trackPlayedInterval <= (currentTime - lastTrackedInterval)
-         sendbeacon( eventId, 'time played', currentTime, true, currentTime )
-         lastTrackedInterval = currentTime
+        trackPlayedSeconds = "00000000000000" + currentTime;
+        trackPlayedSeconds = trackPlayedSeconds.substr(trackPlayedSeconds.length - 15);
+        console.log(trackPlayedSeconds);
+        sendbeacon( eventId, 'currentTime', trackPlayedSeconds, true, trackPlayedSeconds )
+        lastTrackedInterval = currentTime
 
 
     if "seek" in eventsToTrack
